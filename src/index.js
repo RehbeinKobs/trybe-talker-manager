@@ -39,3 +39,17 @@ app.get('/talker/:id', async (req, res) => {
     ? res.status(200).json(filteredData[0])
     : res.status(404).json({ message: 'Pessoa palestrante não encontrada' });
 });
+
+app.post('/login', async (req, res) => {
+  // const { email, password } = req.body;
+  // if (email && password) {
+    const TOKENSIZE = 16;
+    const alfabeto = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let token = '';
+    for (let i = 0; i < TOKENSIZE; i += 1) {
+      token += alfabeto[Math.floor(Math.random() * (alfabeto.length))];
+    } 
+    return res.status(200).json({ token });
+  // }
+  // return res.status(404).json({ message: 'faz certo bocó' });
+});
