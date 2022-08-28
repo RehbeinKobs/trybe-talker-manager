@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const readTalker = require('./utils/readTalker');
 const writeTalker = require('./utils/writeTalker');
 const editTalker = require('./utils/editTalker');
+const deleteTalker = require('./utils/deleteTalker');
 const generateRandomToken = require('./utils/generateRandomToken');
 const checkEmailAndPassword = require('./middlewares/loginPost/checkEmailAndPassword');
 const validateEmailAndPassword = require('./middlewares/loginPost/validateEmailAndPassword');
@@ -92,5 +93,15 @@ app.put(
     const talker = req.body;
     await editTalker(Number(id), talker);
     return res.status(200).json({ id: Number(id), ...talker });
+  },
+);
+
+app.delete(
+  '/talker/:id',
+  validateToken,
+  async (req, res) => {
+    const { id } = req.params;
+    await deleteTalker(Number(id));
+    return res.status(204).end();
   },
 );
