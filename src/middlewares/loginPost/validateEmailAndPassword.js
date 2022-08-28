@@ -1,4 +1,4 @@
-const validateEmailRegex = require('../utils/validateEmailRegex');
+const validateEmailRegex = require('../../utils/validateEmailRegex');
 
 const validateEmailAndPassword = (req, res, next) => {
     const { email, password } = req.body;

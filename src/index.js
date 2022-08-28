@@ -1,20 +1,29 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const fs = require('fs').promises;
-const path = require('path');
+const readTalker = require('./utils/readTalker');
 const generateRandomToken = require('./utils/generateRandomToken');
-const checkEmailAndPassword = require('./middlewares/checkEmailAndPassword');
-const validateEmailAndPassword = require('./middlewares/validateEmailAndPassword');
+const checkEmailAndPassword = require('./middlewares/loginPost/checkEmailAndPassword');
+const validateEmailAndPassword = require('./middlewares/loginPost/validateEmailAndPassword');
+const {
+  checkNameAndAge,
+  validateNameAndAge,
+  checkTalk,
+  checkWatchedAndRate,
+  validateWatchedAndRate,
+} = require('./middlewares/talkerPost/validateTalkerPost');
+const writeTalker = require('./utils/writeTalker');
 
-const talkerPath = path.join(__dirname, './talker.json');
+let TOKEN = '';
 
-const readTalkerData = async () => {
-  try {
-    const data = await fs.readFile(talkerPath, 'utf-8');
-    return JSON.parse(data);
-  } catch (error) {
-    return [];
+const validateToken = (req, res, next) => {
+  const { authorization } = req.headers;
+  if (!authorization) {
+    return res.status(401).json({ message: 'Token não encontrado' });
   }
+  if (authorization !== TOKEN) {
+    return res.status(401).json({ message: 'Token inválido' });
+  }
+  return next();
 };
 
 const app = express();
@@ -32,11 +41,11 @@ app.listen(PORT, () => {
   console.log('Online');
 });
 
-app.get('/talker', async (req, res) => res.status(200).json(await readTalkerData()));
+app.get('/talker', async (req, res) => res.status(200).json(await readTalker()));
 
 app.get('/talker/:id', async (req, res) => {
   const { id } = req.params;
-  const talkerData = await readTalkerData();
+  const talkerData = await readTalker();
   const filteredData = talkerData.filter((t) => t.id === Number(id));
   return filteredData.length > 0
     ? res.status(200).json(filteredData[0])
@@ -47,5 +56,24 @@ app.post(
   '/login',
   checkEmailAndPassword,
   validateEmailAndPassword,
-  async (req, res) => res.status(200).json({ token: generateRandomToken() }),
+  (req, res) => {
+    const token = generateRandomToken();
+    TOKEN = token;
+    return res.status(200).json({ token });
+  },
+);
+
+app.post(
+  '/talker',
+  validateToken,
+  checkNameAndAge,
+  checkTalk,
+  checkWatchedAndRate,
+  validateNameAndAge,
+  validateWatchedAndRate,
+  async (req, res) => {
+    const talker = req.body;
+    const id = await writeTalker(talker);
+    return res.status(201).json({ id, ...talker });
+  },
 );
