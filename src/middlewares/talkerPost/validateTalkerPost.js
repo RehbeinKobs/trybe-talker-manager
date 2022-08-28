@@ -29,7 +29,7 @@ const checkTalk = (req, res, next) => {
 
 const checkWatchedAndRate = (req, res, next) => {
     const { watchedAt, rate } = req.body.talk;
-    if (watchedAt && rate) return next();
+    if (watchedAt && (rate || rate === 0)) return next();
     return watchedAt
     ? res.status(400).json({ message: 'O campo "rate" é obrigatório' })
     : res.status(400).json({ message: 'O campo "watchedAt" é obrigatório' });

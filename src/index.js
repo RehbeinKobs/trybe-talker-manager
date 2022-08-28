@@ -1,6 +1,8 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const readTalker = require('./utils/readTalker');
+const writeTalker = require('./utils/writeTalker');
+const editTalker = require('./utils/editTalker');
 const generateRandomToken = require('./utils/generateRandomToken');
 const checkEmailAndPassword = require('./middlewares/loginPost/checkEmailAndPassword');
 const validateEmailAndPassword = require('./middlewares/loginPost/validateEmailAndPassword');
@@ -11,7 +13,6 @@ const {
   checkWatchedAndRate,
   validateWatchedAndRate,
 } = require('./middlewares/talkerPost/validateTalkerPost');
-const writeTalker = require('./utils/writeTalker');
 
 let TOKEN = '';
 
@@ -75,5 +76,21 @@ app.post(
     const talker = req.body;
     const id = await writeTalker(talker);
     return res.status(201).json({ id, ...talker });
+  },
+);
+
+app.put(
+  '/talker/:id',
+  validateToken,
+  checkNameAndAge,
+  checkTalk,
+  checkWatchedAndRate,
+  validateNameAndAge,
+  validateWatchedAndRate,
+  async (req, res) => {
+    const { id } = req.params;
+    const talker = req.body;
+    await editTalker(Number(id), talker);
+    return res.status(200).json({ id: Number(id), ...talker });
   },
 );
